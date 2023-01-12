@@ -86,7 +86,7 @@ export default class App extends Component {
 
             console.log(gasPrice, "+++++GAS PRICE +++++++");
             let cwClient = await SigningCosmWasmClient.connectWithSigner(
-              this.state.rpc,
+              this.state.chainMeta.rpc,
               offlineSigner
             );
             let accounts = await offlineSigner.getAccounts();
@@ -176,7 +176,7 @@ export default class App extends Component {
   readyToMint = async () => {
     try {
       const metadata = this.state.metadata;
-      console.log(metadata);
+      console.log("meta:" + metadata);
       const response = await IPFS.uploadJSON(metadata);
       this.setState({ token_uri: response?.pinataURL });
 
@@ -533,17 +533,17 @@ export default class App extends Component {
    * @see https://github.com/drewstaylor/archway-template/blob/main/src/contract.rs#L42
    */
   mintNft = async () => {
-    if (
-      !this.state.metadata.name ||
-      !this.state.metadata.description ||
-      !this.state.metadata.image
-    ) {
-      console.warn(
-        "Error resolving NFT name or description metadata",
-        this.state.metadata
-      );
-      return;
-    }
+    // if (
+    //   !this.state.metadata.name ||
+    //   !this.state.metadata.description ||
+    //   !this.state.metadata.image
+    // ) {
+    //   console.warn(
+    //     "Error resolving NFT name or description metadata",
+    //     this.state.metadata
+    //   );
+    //   return;
+    // }
 
     // SigningCosmWasmClient.execute: async (senderAddress, contractAddress, msg, fee, memo = "", funds)
     if (!this.state.accounts) {
@@ -566,7 +566,7 @@ export default class App extends Component {
     // Prepare Tx
     let entrypoint = {
       mint: {
-        token_id: Number(this.state.nfts.tokens.length + 1),
+        token_id: 100, //Number(this.state.nfts.tokens.length + 1),
         owner: this.state.accounts[0].address,
         token_uri: this.state.token_uri,
       },
@@ -582,15 +582,22 @@ export default class App extends Component {
 
     try {
       // Send Tx
-      // const temp = {mint:{token_id:"1",owner:this.state.accounts[0].address,token_uri:"abcd"}};
+      const temp = {mint:{token_id:"100",owner:this.state.accounts[0].address,token_uri:"abcd"}};
 
       // const myEntryPoint = JSON.stringify(temp);
 
       // console.log('ENTRY POINT', myEntryPoint);
-console.log("starting tx")
-MINT='{"mint":{"token_id":"1","owner":"juno1uxefgpvgk0ddyfhg8zwuj4ggs4ywfzegvlvmpj","token_uri":"https://gateway.pinata.cloud/ipfs/QmQCZGp6PDxxDb5X5uWBaeT4wvG3eGbBfmZCQ1FZSd7kEd"}}']
-      console.log("Mint Tx", tx);
+// console.log("starting tx")
+// MINT='{"mint":{"token_id":"1","owner":"juno1uxefgpvgk0ddyfhg8zwuj4ggs4ywfzegvlvmpj","token_uri":"https://gateway.pinata.cloud/ipfs/QmQCZGp6PDxxDb5X5uWBaeT4wvG3eGbBfmZCQ1FZSd7kEd"}}'
+//       console.log("Mint Tx", tx);
 
+       let tx = await this.state.cwClient.execute(
+        this.state.accounts[0].address,
+        this.state.contract,
+        temp,
+        { amount: [{ amount: "200000", denom: "ujunox" }], gas: "200000" }
+       );
+      
       this.setState({
         loadingStatus: false,
         loadingMsg: "",
